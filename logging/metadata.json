@@ -1,0 +1,28 @@
+{
+  "run_id": "20260805T031044Z-4672eed5",
+  "provider": "OpenAI",
+  "model": "gpt-4o-mini",
+  "parameter_size": "not publicly disclosed by OpenAI",
+  "parameter_limit_note": "OpenAI does not publish the parameter count for gpt-4o-mini; confirm acceptance of this model with the instructor.",
+  "framework": "Custom Python typed multi-agent orchestrator",
+  "sdk": "openai-python 2.48.0",
+  "schema_library": "pydantic 2.13.4",
+  "runtime": "Python 3.12.7 on Windows",
+  "policy_version": "EC_POLICY_V1",
+  "temperature": 0,
+  "llm_mode": "all",
+  "started_at": "2026-08-05T03:10:44.555710+00:00",
+  "status": "completed",
+  "completed_at": "2026-08-05T03:11:55.528476+00:00",
+  "processed_cases": 50,
+  "failed_cases": 0,
+  "issue_counts": {
+    "canceled_order_paid": 8,
+    "late_delivery_logistics": 8,
+    "late_delivery_seller": 8,
+    "unavailable_order_paid": 8,
+    "unsupported_late_claim": 9,
+    "valid_split_payment": 9
+  },
+  "trace_events": 1254
+}

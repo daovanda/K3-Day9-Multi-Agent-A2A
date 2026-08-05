@@ -1,0 +1,5 @@
+openai>=2.48.0,<3
+pydantic>=2.13.0,<3
+python-dotenv>=1.0.0,<2
+pytest>=8.0.0,<10
+
