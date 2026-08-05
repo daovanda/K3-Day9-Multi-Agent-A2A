@@ -1,15 +1,15 @@
 # Báo cáo cá nhân — Day 9: Multi-Agent A2A
 
-> Bản nháp kỹ thuật đã điền theo implementation hiện tại. Người nộp phải thay
-> tên file, Họ tên, MSSV, lớp và chỉ giữ những phần việc mình thực sự sở hữu.
+> Báo cáo kỹ thuật cá nhân theo implementation hiện tại. Người nộp chỉ giữ những
+> phần việc mình thực sự sở hữu và tự xác nhận checklist trước khi nộp.
 
 ## 1. Thông tin cá nhân
 
 | Thông tin | Nội dung |
 |---|---|
-| Họ và tên | [CẦN ĐIỀN] |
-| MSSV | [CẦN ĐIỀN] |
-| Khóa/Lớp | K3 / [CẦN ĐIỀN] |
+| Họ và tên | Đào Văn Đà |
+| MSSV | 01089 |
+| Khóa/Lớp | K3 / E402 |
 | Vai trò chính | Multi-agent orchestration, verification và audit logging |
 | Ngày hoàn thành | 2026-08-05 |
 
@@ -32,8 +32,8 @@ chứa key, đối chiếu ZIP root và viết architecture/runbook.
 |---|---|---|---|
 | Xử lý 50 case | `output/EC_001.json`–`EC_050.json` | Đủ 6 policy branch | `python validate_outputs.py` |
 | Multi-agent trace thật | `logging/trace.jsonl` | 200 model calls, 200 handoff, 50 verified case | Group event type trong JSONL |
-| Đóng gói | `submission.zip` | 50 JSON tại ZIP root | `python validate_outputs.py --zip submission.zip` |
-| Regression tests | `tests/test_pipeline.py` | 6 test pass | `python -m pytest -q` |
+| Đóng gói | `submission.zip` | 50 JSON dưới thư mục `output/` trong ZIP | `python validate_outputs.py --zip submission.zip` |
+| Regression tests | `tests/test_pipeline.py`, `tests/test_edge_cases.py` | 13 test pass | `python -m pytest -q` |
 
 Phân bố kết quả: canceled 8, unavailable 8, late seller 8, late logistics 8,
 valid split 9 và unsupported late claim 9.
@@ -71,8 +71,8 @@ python -m pytest -q
 python validate_outputs.py --zip submission.zip
 ```
 
-- Kết quả mong đợi: 6 test pass, 50 file hợp lệ, ZIP hợp lệ.
-- Kết quả thực tế: 6 test pass; validator trả `file_count: 50` và đúng phân bố.
+- Kết quả mong đợi: 13 test pass, 50 file hợp lệ, ZIP hợp lệ.
+- Kết quả thực tế: 13 test pass; validator xác nhận đủ 50 file và đúng phân bố.
 - Artifact/log: `logging/trace.jsonl`, `logging/metadata.json`.
 
 ## 5. Quyết định kỹ thuật quan trọng
@@ -114,8 +114,8 @@ khớp CSV, evidence resolve được, 50 verification pass và ZIP đúng 50 en
 - [ ] Tôi đã cá nhân hóa đúng phần việc thực sự của mình.
 - [ ] Tôi có thể giải thích luồng end-to-end và policy priority.
 - [ ] Tôi đã tự chạy các lệnh xác minh ghi trong báo cáo.
-- [ ] Báo cáo/repo không chứa `.env`, API key, token hoặc secret.
-- [ ] Tôi đã đổi `5SoCuoiMHV_HoVaTen` thành MSSV và họ tên thật.
+- [x] Báo cáo/repo không chứa `.env`, API key, token hoặc secret.
+- [x] Tôi đã đổi tên file theo 5 số cuối MSSV và họ tên thật.
 
-**Họ và tên:** [CẦN ĐIỀN]  
-**Ngày xác nhận:** [CẦN ĐIỀN]
+**Họ và tên:** Đào Văn Đà  
+**Ngày xác nhận:** 2026-08-05

@@ -5,7 +5,12 @@ import json
 from pathlib import Path
 
 from src.config import OUTPUT_DIR, ROOT_DIR
-from src.validation import validate_output_set, validate_submission_zip
+from src.validation import (
+    validate_output_set,
+    validate_repository_deliverables,
+    validate_submission_zip,
+    validate_trace,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -18,8 +23,9 @@ def parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = parse_args()
     result = validate_output_set(args.output_dir)
+    result["trace"] = validate_trace()
+    result["repository"] = validate_repository_deliverables()
     if args.zip_path is not None:
         validate_submission_zip(args.zip_path)
         result["zip"] = str(args.zip_path.resolve())
     print(json.dumps(result, ensure_ascii=False, indent=2))
-

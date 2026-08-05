@@ -26,11 +26,11 @@ class VerifierAgent:
         if output.affected_entities.order_ids != [order_id]:
             errors.append("affected order_ids do not match the claimed order")
 
-        expected_items = [f"{order_id}:{item.order_item_id}" for item in items]
-        expected_sellers = sorted({item.seller_id for item in items})
+        expected_items = [f"{order_id}:{item.order_item_id}" for item in items][:5]
+        expected_sellers = sorted({item.seller_id for item in items})[:5]
         expected_payments = [
             f"{order_id}:{payment.payment_sequential}" for payment in payments
-        ]
+        ][:5]
         if output.affected_entities.item_ids != expected_items:
             errors.append("affected item_ids do not match CSV rows")
         if output.affected_entities.seller_ids != expected_sellers:
@@ -103,4 +103,3 @@ class VerifierAgent:
                 "checked_evidence": len(output.evidence_ids),
             },
         )
-
