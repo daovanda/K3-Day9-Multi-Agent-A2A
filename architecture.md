@@ -12,6 +12,19 @@ OpenAI API với Structured Outputs/Pydantic. OpenAI không công bố parameter
 của model này; giảng viên đã xác nhận cho phép nhóm sử dụng `gpt-4o-mini` trong
 bài lab. Metadata ghi rõ cả approval và trạng thái parameter không công bố.
 
+### Phân công và ownership
+
+| Thành viên | 5 số cuối MSSV | Ownership chính |
+|---|---:|---|
+| Đào Văn Đà | 01089 | Coordinator, Policy, pipeline, cấu hình và tích hợp/đóng gói |
+| Trương Quốc Trường | 01195 | Repository, Order/Seller, Delivery và timestamp edge cases |
+| Nguyễn Ngọc Ánh | 01643 | Payment, financial resolution, reconciliation và financial tests |
+| Nguyễn Hoàng Vĩnh Phong | 01265 | OpenAI client, trace, Verifier, validator, QA và runbook |
+
+Ownership dùng để xác định người chịu trách nhiệm chính; các thay đổi giao nhau
+(schema, policy, validation) phải được ít nhất chủ module và trưởng nhóm tích hợp
+review trước lượt chạy chính thức.
+
 ## 2. Sơ đồ agent và handoff
 
 ```mermaid
