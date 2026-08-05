@@ -12,6 +12,7 @@ from src.trace_logger import TraceLogger, install_exception_hook
 
 
 EXPECTED_CASE_NAMES = {f"EC_{number:03d}.json" for number in range(1, 51)}
+EXPECTED_ZIP_NAMES = {f"output/{name}" for name in EXPECTED_CASE_NAMES}
 
 
 def clear_generated_outputs(output_dir: Path = OUTPUT_DIR) -> None:
@@ -40,7 +41,7 @@ def build_submission_zip(
         raise ValueError(f"Cannot package output: missing={missing}, extra={extra}")
     with ZipFile(destination, "w", compression=ZIP_DEFLATED) as archive:
         for path in files:
-            archive.write(path, arcname=path.name)
+            archive.write(path, arcname=f"output/{path.name}")
     return destination
 
 

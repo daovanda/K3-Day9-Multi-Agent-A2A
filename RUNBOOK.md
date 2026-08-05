@@ -44,11 +44,12 @@ metadata. `--llm-mode all` thực hiện 4 structured audit × 50 case.
 - `output/EC_001.json` … `output/EC_050.json`: kết quả chấm.
 - `logging/trace.jsonl`: trace thật của lần chạy mới nhất.
 - `logging/metadata.json`: provider/model/runtime/run summary.
-- `submission.zip`: đúng 50 JSON ở ZIP root.
+- `submission.zip`: đúng 50 JSON dưới `output/` trong ZIP.
 - `architecture.md`: design, quyền truy cập và handoff.
 
-ZIP nộp bài chỉ là `submission.zip`; source, `.env`, trace và metadata không nằm
-trong ZIP này. Source và audit artifacts vẫn phải commit vào repo nhóm.
+ZIP nộp bài chỉ là `submission.zip`, có entry `output/EC_001.json` đến
+`output/EC_050.json`; source, `.env`, trace và metadata không nằm trong ZIP này.
+Source và audit artifacts vẫn phải commit vào repo nhóm.
 
 ## Checklist trước khi nộp
 

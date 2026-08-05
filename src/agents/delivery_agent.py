@@ -41,11 +41,19 @@ class DeliveryAgent:
         )
         delivered = _parse_timestamp(order_finding.customer_delivery_date)
         estimated = _parse_timestamp(order_finding.estimated_delivery_date)
-        is_late = delivered is not None and estimated is not None and delivered > estimated
+        delivery_verified = delivered is not None and estimated is not None
+        is_late = delivery_verified and delivered > estimated
+        is_within_estimate = delivery_verified and delivered <= estimated
+        handoff_verified = bool(
+            order_finding.carrier_date and order_finding.item_shipping_limits
+        )
         finding = DeliveryFinding(
             case_id=case.case_id,
             order_id=order_finding.order_id,
+            delivery_timing_verified=delivery_verified,
             is_delivered_late=is_late,
+            is_within_estimate=is_within_estimate,
+            seller_handoff_timing_verified=handoff_verified,
             seller_handoff_late=bool(order_finding.late_handoff_seller_ids),
             late_handoff_seller_ids=order_finding.late_handoff_seller_ids,
         )

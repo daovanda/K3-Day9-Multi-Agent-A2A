@@ -8,10 +8,20 @@ from zipfile import ZipFile
 import pytest
 
 from src.config import LOGGING_DIR, OUTPUT_DIR
-from src.pipeline import EXPECTED_CASE_NAMES, build_submission_zip, run_pipeline
+from src.pipeline import (
+    EXPECTED_CASE_NAMES,
+    EXPECTED_ZIP_NAMES,
+    build_submission_zip,
+    run_pipeline,
+)
 from src.repository import DataRepository
 from src.schemas import CaseOutput
-from src.validation import validate_output_set, validate_submission_zip
+from src.validation import (
+    validate_output_set,
+    validate_repository_deliverables,
+    validate_submission_zip,
+    validate_trace,
+)
 
 
 EXPECTED_DISTRIBUTION = {
@@ -87,12 +97,23 @@ def test_logging_is_automatic_and_complete(completed_run):
     assert "openai_api_key" not in raw_trace
 
 
-def test_submission_zip_has_only_root_json_files(completed_run):
+def test_official_trace_contract(completed_run):
+    result = validate_trace()
+    assert result["trace_events"] > 0
+    assert result["failed_events"] == 0
+
+
+def test_repository_deliverables_are_complete(completed_run):
+    result = validate_repository_deliverables()
+    assert result["personal_report"] == "individual_01089_DaoVanDa.md"
+
+
+def test_submission_zip_has_required_output_directory(completed_run):
     destination = OUTPUT_DIR.parent / "submission.test.zip"
     try:
         destination = build_submission_zip(destination=destination)
         validate_submission_zip(destination)
         with ZipFile(destination) as archive:
-            assert set(archive.namelist()) == EXPECTED_CASE_NAMES
+            assert set(archive.namelist()) == EXPECTED_ZIP_NAMES
     finally:
         destination.unlink(missing_ok=True)

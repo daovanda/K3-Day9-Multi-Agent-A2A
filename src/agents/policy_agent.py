@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from src.config import DECISION_CONFIDENCE
 from src.llm_client import AgentLLM
 from src.schemas import (
     CaseInput,
@@ -51,7 +52,7 @@ class PolicyAgent:
             decision = PolicyDecision(
                 primary_issue="canceled_order_paid",
                 case_status="action_required",
-                confidence=0.99,
+                confidence=DECISION_CONFIDENCE,
                 root_cause="ORDER_CANCELED_AFTER_PAYMENT",
                 responsible_parties=[
                     ResponsibleParty(party_type="platform", party_id="OLIST_PLATFORM")
@@ -63,7 +64,7 @@ class PolicyAgent:
             decision = PolicyDecision(
                 primary_issue="unavailable_order_paid",
                 case_status="action_required",
-                confidence=0.99,
+                confidence=DECISION_CONFIDENCE,
                 root_cause="ORDER_UNAVAILABLE_AFTER_PAYMENT",
                 responsible_parties=[
                     ResponsibleParty(party_type="platform", party_id="OLIST_PLATFORM")
@@ -75,7 +76,7 @@ class PolicyAgent:
             decision = PolicyDecision(
                 primary_issue="late_delivery_seller",
                 case_status="action_required",
-                confidence=0.99,
+                confidence=DECISION_CONFIDENCE,
                 root_cause="SELLER_HANDOFF_AFTER_LIMIT",
                 responsible_parties=[
                     ResponsibleParty(party_type="seller", party_id=seller_id)
@@ -84,11 +85,11 @@ class PolicyAgent:
                 recommended_refund_brl=order.freight_total_brl,
                 resolution_action="refund_freight",
             )
-        elif delivery.is_delivered_late:
+        elif delivery.is_delivered_late and delivery.seller_handoff_timing_verified:
             decision = PolicyDecision(
                 primary_issue="late_delivery_logistics",
                 case_status="action_required",
-                confidence=0.99,
+                confidence=DECISION_CONFIDENCE,
                 root_cause="CARRIER_DELIVERED_AFTER_ESTIMATE",
                 responsible_parties=[
                     ResponsibleParty(
@@ -102,17 +103,17 @@ class PolicyAgent:
             decision = PolicyDecision(
                 primary_issue="valid_split_payment",
                 case_status="no_action",
-                confidence=0.99,
+                confidence=DECISION_CONFIDENCE,
                 root_cause="MULTIPLE_PAYMENTS_RECONCILED",
                 responsible_parties=[],
                 recommended_refund_brl=0.0,
                 resolution_action="explain_valid_split_payment",
             )
-        elif not delivery.is_delivered_late and payment.is_reconciled:
+        elif delivery.is_within_estimate and payment.is_reconciled:
             decision = PolicyDecision(
                 primary_issue="unsupported_late_claim",
                 case_status="no_action",
-                confidence=0.99,
+                confidence=DECISION_CONFIDENCE,
                 root_cause="DELIVERY_WITHIN_ESTIMATE",
                 responsible_parties=[],
                 recommended_refund_brl=0.0,

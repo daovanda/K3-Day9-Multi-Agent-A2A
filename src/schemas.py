@@ -91,7 +91,10 @@ class PaymentFinding(StrictModel):
 class DeliveryFinding(StrictModel):
     case_id: str
     order_id: str
+    delivery_timing_verified: bool
     is_delivered_late: bool
+    is_within_estimate: bool
+    seller_handoff_timing_verified: bool
     seller_handoff_late: bool
     late_handoff_seller_ids: list[str]
 

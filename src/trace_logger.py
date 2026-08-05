@@ -38,9 +38,10 @@ class TraceLogger:
             "model": MODEL_NAME,
             "parameter_size": MODEL_PARAMETER_SIZE,
             "parameter_limit_note": (
-                "OpenAI does not publish the parameter count for gpt-4o-mini; "
-                "confirm acceptance of this model with the instructor."
+                "OpenAI does not publish the parameter count for gpt-4o-mini. "
+                "The instructor approved this model for this lab."
             ),
+            "model_approval": "approved by instructor for this lab",
             "framework": "Custom Python typed multi-agent orchestrator",
             "sdk": f"openai-python {openai.__version__}",
             "schema_library": f"pydantic {pydantic.__version__}",
@@ -159,4 +160,3 @@ def install_exception_hook(logger: TraceLogger) -> None:
         old_hook(exc_type, exc_value, traceback)
 
     sys.excepthook = hook
-
