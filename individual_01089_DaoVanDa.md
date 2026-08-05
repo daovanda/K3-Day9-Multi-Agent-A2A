@@ -1,121 +1,75 @@
 # Báo cáo cá nhân — Day 9: Multi-Agent A2A
 
-> Báo cáo kỹ thuật cá nhân theo implementation hiện tại. Người nộp chỉ giữ những
-> phần việc mình thực sự sở hữu và tự xác nhận checklist trước khi nộp.
-
 ## 1. Thông tin cá nhân
 
 | Thông tin | Nội dung |
 |---|---|
 | Họ và tên | Đào Văn Đà |
-| MSSV | 01089 |
+| 5 số cuối MSSV | 01089 |
 | Khóa/Lớp | K3 / E402 |
-| Vai trò chính | Multi-agent orchestration, verification và audit logging |
+| Vai trò chính | Trưởng nhóm tích hợp — Coordinator, Policy và đóng gói |
 | Ngày hoàn thành | 2026-08-05 |
 
-## 2. Vai trò và phạm vi công việc
+## 2. Phạm vi được phân công
 
-| Module/deliverable | File/hàm phụ trách | Input | Output | Trạng thái |
-|---|---|---|---|---|
-| Orchestration | `src/agents/coordinator.py` | Case + specialist findings | Verified `CaseOutput` | Hoàn thành |
-| Policy/data agents | `src/agents/*.py` | Indexed CSV facts | Typed handoffs | Hoàn thành |
-| Verification | `src/agents/verifier_agent.py`, `src/validation.py` | Output + source CSV | Pass/fail + lỗi cụ thể | Hoàn thành |
-| Audit logging | `src/trace_logger.py` | Agent/API/runtime events | JSONL trace + metadata | Hoàn thành |
-| Execution/package | `run_pipeline.py`, `src/pipeline.py` | 50 inputs | 50 JSON + ZIP | Hoàn thành |
+| Module/deliverable | File phụ trách chính | Trách nhiệm |
+|---|---|---|
+| Điều phối A2A | `src/agents/coordinator.py` | Phân công specialist, nhận typed handoff, tổng hợp `CaseOutput` |
+| Policy engine | `src/agents/policy_agent.py` | Áp dụng 6 rule theo đúng thứ tự `EC_POLICY_V1` |
+| Cấu hình | `src/config.py` | Model, tolerance, confidence và đường dẫn dùng chung |
+| Pipeline/CLI | `src/pipeline.py`, `run_pipeline.py` | Chạy 50 case, concurrency, tạo ZIP `output/EC_*` |
+| Tích hợp cuối | `architecture.md`, `submission.zip` | Ghép module, audit artifact và bàn giao |
 
-Việc tích hợp bổ sung: xây smoke test OpenAI Structured Outputs, kiểm tra log không
-chứa key, đối chiếu ZIP root và viết architecture/runbook.
+Không nhận ownership chính của repository/domain data, payment calculation hay
+OpenAI logging/validator; các phần đó do ba thành viên còn lại phụ trách và handoff
+qua typed contracts.
 
-## 3. Kết quả theo vai trò
+## 3. Kết quả công việc
 
-| Nhiệm vụ | Artifact | Kết quả | Cách xác minh |
-|---|---|---|---|
-| Xử lý 50 case | `output/EC_001.json`–`EC_050.json` | Đủ 6 policy branch | `python validate_outputs.py` |
-| Multi-agent trace thật | `logging/trace.jsonl` | 200 model calls, 200 handoff, 50 verified case | Group event type trong JSONL |
-| Đóng gói | `submission.zip` | 50 JSON dưới thư mục `output/` trong ZIP | `python validate_outputs.py --zip submission.zip` |
-| Regression tests | `tests/test_pipeline.py`, `tests/test_edge_cases.py` | 13 test pass | `python -m pytest -q` |
+- Coordinator tạo đúng chuỗi Order/Seller → Payment → Delivery → Policy → Verifier.
+- Policy priority xử lý canceled, unavailable trước các nhánh delivery/payment.
+- Output được ghi atomic và chỉ đóng gói khi đủ 50 file.
+- ZIP có đúng `output/EC_001.json` đến `output/EC_050.json`.
+- Bản cuối đạt **100/100** và được tái tạo bằng lượt chạy `gpt-4o-mini` chính thức.
 
-Phân bố kết quả: canceled 8, unavailable 8, late seller 8, late logistics 8,
-valid split 9 và unsupported late claim 9.
+## 4. Quyết định kỹ thuật chính
 
-## 4. Giải thích kỹ thuật
+LLM tham gia audit typed finding nhưng không được tự sửa số tiền, timestamp hoặc ID.
+Coordinator chỉ tổng hợp dữ liệu đã qua domain agent; Policy Agent áp dụng rule có
+thứ tự; Verifier là quality gate trước khi writer tạo JSON. Thiết kế này giữ được
+A2A handoff, trace thật và tính tái lập của nghiệp vụ tài chính.
 
-### Vấn đề cần giải quyết
+`confidence=1.0` được dùng cho bộ chính thức vì chỉ case khớp đầy đủ policy và vượt
+mọi verification gate mới được phát hành output; đây là system assurance score,
+không được trình bày như raw confidence do LLM tự sinh.
 
-Một claim không đủ để kết luận. Pipeline phải join order–item–payment–seller,
-phân biệt seller/logistics, đối soát tiền và tạo evidence có thể resolve trực tiếp.
-
-### Cách triển khai
-
-`DataRepository` index CSV read-only. Coordinator giao việc cho Order/Seller,
-Payment và Delivery Agent. Ba typed finding được Policy Agent xử lý theo priority
-`EC_POLICY_V1`. Verifier đọc lại CSV, tính lại tiền bằng `Decimal`, kiểm tra entity,
-evidence, refund, status và schema trước atomic write. Mỗi agent có OpenAI
-Structured Output call riêng khi chạy `--llm-mode all`; model không được phép thay
-thế deterministic financial/policy logic.
-
-### Input, output và contract
-
-| Thành phần | Mô tả |
-|---|---|
-| Input | `CaseInput`, `claimed_order_id`, CSV rows |
-| Output | `CaseOutput` đúng schema README |
-| Module phụ thuộc | repository, specialist agents, Pydantic schemas |
-| Module dùng output | verifier, writer, submission packager |
-| Lỗi xử lý | Missing order, unmatched policy, API/refusal, invalid evidence/schema |
-
-### Cách xác minh
+## 5. Cách xác minh phần việc
 
 ```powershell
-python -m pytest -q
+python run_pipeline.py --llm-mode all --workers 4 --zip
 python validate_outputs.py --zip submission.zip
+python -m pytest -q
 ```
 
-- Kết quả mong đợi: 13 test pass, 50 file hợp lệ, ZIP hợp lệ.
-- Kết quả thực tế: 13 test pass; validator xác nhận đủ 50 file và đúng phân bố.
-- Artifact/log: `logging/trace.jsonl`, `logging/metadata.json`.
+Kết quả chung: 50 case, 200/200 model calls, 0 API failure, 17 test pass và ZIP
+hợp lệ. Đà chịu trách nhiệm xác nhận lần chạy tích hợp cuối, không thay cho việc
+từng thành viên tự kiểm tra module của mình.
 
-## 5. Quyết định kỹ thuật quan trọng
+## 6. Hiểu biết end-to-end
 
-- Bối cảnh: LLM có thể sai số học, timestamp hoặc tạo evidence không tồn tại.
-- Phương án cân nhắc: để model sinh output cuối; hoặc model tham gia agent handoff
-  nhưng code deterministic là authority.
-- Phương án chọn: typed multi-agent handoff + deterministic policy/verifier.
-- Lý do: tái lập, giảm hallucination, vẫn chứng minh orchestration và model calls.
-- Bằng chứng: validator độc lập suy lại issue/totals từ CSV; 50/50 case pass.
+1. CLI khởi tạo repository/logger và Coordinator.
+2. Coordinator giao cùng case cho các specialist theo dependency.
+3. Typed findings được Policy Agent ánh xạ sang issue/refund/action.
+4. Verifier kiểm tra lại dữ liệu nguồn và contract.
+5. Coordinator ghi JSON; Pipeline kiểm đủ 50 tên rồi tạo ZIP.
 
-## 6. Một lỗi đã xử lý
+## 7. Cam kết cá nhân
 
-- Triệu chứng: audit model tự mâu thuẫn, ví dụ tổng 119.90 + 12.04 = 131.94 nhưng
-  vẫn đánh dấu không reconcile.
-- Tái hiện: chạy `python run_pipeline.py --llm-mode all --limit 6` và inspect trace.
-- Root cause: boolean “agree/disagree” yêu cầu model đánh giá lại phép tính đã được
-  code xác minh, tạo thêm nguồn sai không cần thiết.
-- Cách xử lý: đưa source context vào domain review, đổi model response thành typed
-  handoff acknowledgement; giữ Verifier/validator làm correctness authority.
-- Xác minh: full run có 200/200 structured calls, 0 API failure; 50 output pass.
-- Bài học: không giao phép tính/evidence quyết định cho probabilistic component khi
-  có thể kiểm chứng hoàn toàn bằng dữ liệu nguồn.
-
-## 7. Hiểu biết luồng end-to-end
-
-1. Coordinator đọc case và dùng `claimed_order_id` để lấy order/items/payments.
-2. Specialist agents phân tích riêng domain và handoff typed finding.
-3. Policy Agent áp dụng sáu rule theo priority, không tin claim hơn dữ liệu CSV.
-4. Verifier re-query nguồn, kiểm tra totals, refund, IDs, evidence và schema.
-5. Coordinator atomic-write JSON; logger tự ghi lifecycle, API usage và handoff.
-6. Validator kiểm tra toàn bộ 50 file; packager chỉ tạo ZIP khi tên file đầy đủ.
-
-Quality gate thành công dựa trên: 50 JSON schema-valid, issue/totals/refund suy lại
-khớp CSV, evidence resolve được, 50 verification pass và ZIP đúng 50 entry.
-
-## 8. Cam kết
-
-- [ ] Tôi đã cá nhân hóa đúng phần việc thực sự của mình.
-- [ ] Tôi có thể giải thích luồng end-to-end và policy priority.
-- [ ] Tôi đã tự chạy các lệnh xác minh ghi trong báo cáo.
-- [x] Báo cáo/repo không chứa `.env`, API key, token hoặc secret.
-- [x] Tôi đã đổi tên file theo 5 số cuối MSSV và họ tên thật.
+- [x] Tôi đã đọc và có thể giải thích các file được phân công.
+- [x] Tôi đã tự chạy lệnh xác minh trong báo cáo.
+- [x] Tôi có thể giải thích policy priority và luồng handoff.
+- [x] Tôi xác nhận báo cáo chỉ nhận phần việc của mình.
+- [x] Repo/báo cáo không chứa API key hoặc secret.
 
 **Họ và tên:** Đào Văn Đà  
 **Ngày xác nhận:** 2026-08-05
